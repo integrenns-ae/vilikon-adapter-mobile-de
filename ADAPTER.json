@@ -3,7 +3,7 @@
   "slug": "mobile-de",
   "version": "0.1.0",
   "build": "python3 -m venv .venv && .venv/bin/pip install -r requirements.txt .",
-  "start": ".venv/bin/mobilede-adapter serve",
+  "start": ".venv/bin/python -m mobilede_adapter serve",
   "check": "ki/pruefen",
   "languages": {
     "en": {

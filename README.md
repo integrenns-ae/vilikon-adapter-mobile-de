@@ -89,11 +89,13 @@ second with the same values and that `confirmation` carries it out. A code is va
 
 ## Running it in Vilikon
 
-The IT Specialist sets it up on the dealer's instance:
+On an instance with the adapter catalog the IT Specialist does all of this with one tool call (`adapter_install`),
+driven by `ADAPTER.json`, and the owner types the credentials into a card in the chat. By hand, it goes like this:
 
 1. A tool project with its own repository in the instance's GitHub account, filled with a copy of this repository.
 2. Build `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt .`, start
-   `.venv/bin/mobilede-adapter serve`.
+   `.venv/bin/python -m mobilede_adapter serve` (the cockpit moves the folder on publishing, so the start must not
+   rely on the paths baked into `.venv/bin` scripts).
 3. On an English instance, copy `vilikon/en/MODUL.json` and `vilikon/en/MITARBEITER.md` over the German ones in the
    root.
 4. Request the credentials `MOBILE_DE_USER`, `MOBILE_DE_PASSWORD` (and `MOBILE_DE_SELLER_ID` if needed) with
