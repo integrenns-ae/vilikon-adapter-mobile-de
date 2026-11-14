@@ -1,0 +1,36 @@
+{
+  "standard": "vilikon.adapter/1",
+  "slug": "mobile-de",
+  "version": "0.1.0",
+  "build": "python3 -m venv .venv && .venv/bin/pip install -r requirements.txt .",
+  "start": ".venv/bin/mobilede-adapter serve",
+  "check": "ki/pruefen",
+  "languages": {
+    "en": {
+      "MODUL.json": "vilikon/en/MODUL.json",
+      "MITARBEITER.md": "vilikon/en/MITARBEITER.md"
+    }
+  },
+  "credentials": [
+    {
+      "name": "MOBILE_DE_USER",
+      "label": {"de": "Benutzername des API-Zugangs", "en": "API user name"},
+      "help": {
+        "de": "Den API-Zugang schaltet der mobile.de-Kundenservice für das eigene Händlerkonto frei (service@team.mobile.de, mit Kundennummer). Er ist nicht der Login für den Händlerbereich.",
+        "en": "mobile.de customer service enables the API user for the dealer's own account (service@team.mobile.de, with the customer number). It is not the login for the dealer area."
+      },
+      "url": "https://services.mobile.de/docs/seller-api.html"
+    },
+    {
+      "name": "MOBILE_DE_PASSWORD",
+      "label": {"de": "Passwort des API-Zugangs", "en": "API user password"},
+      "help": {"de": "Kommt zusammen mit dem Benutzernamen von mobile.de.", "en": "Comes from mobile.de together with the user name."}
+    },
+    {
+      "name": "MOBILE_DE_SELLER_ID",
+      "optional": true,
+      "label": {"de": "Händlernummer (nur bei mehreren Konten)", "en": "Dealer number (only with several accounts)"},
+      "help": {"de": "Leer lassen, wenn zum Zugang nur ein Händlerkonto gehört.", "en": "Leave empty if only one dealer account belongs to the API user."}
+    }
+  ]
+}

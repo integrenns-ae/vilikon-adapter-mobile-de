@@ -1,0 +1,443 @@
+{
+  "standard": "vilikon.modul/1",
+  "schluessel": "mobilede",
+  "name": "mobile.de",
+  "beschreibung": "Listings, prices, ratings and customer inquiries of the dealer's own mobile.de account.",
+  "rechte": [
+    {
+      "key": "read_listings",
+      "titel": "View mobile.de listings",
+      "beschreibung": "May view listings, price ratings and statistics at mobile.de.",
+      "sensibel": false
+    },
+    {
+      "key": "edit_listings",
+      "titel": "Maintain mobile.de listings",
+      "beschreibung": "May change prices, create, renew, reserve and delete listings and propose direct offers; each change only after approval.",
+      "sensibel": true
+    },
+    {
+      "key": "leads",
+      "titel": "mobile.de inquiries",
+      "beschreibung": "May read customer inquiries from mobile.de with contact data and report their state back.",
+      "sensibel": true
+    },
+    {
+      "key": "ratings",
+      "titel": "mobile.de ratings",
+      "beschreibung": "May read ratings and propose replies and invitations; each only after approval.",
+      "sensibel": true
+    }
+  ],
+  "funktionen": [
+    {
+      "name": "seller_info",
+      "beschreibung": "Shows the dealer account at mobile.de: name, customer number, how many images a listing may have.",
+      "recht": "read_listings",
+      "methode": "GET",
+      "pfad": "ki/seller",
+      "parameter": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "list_ads",
+      "beschreibung": "Shows the listings in short form; search keeps only listings with every word (make, model, internal number).",
+      "recht": "read_listings",
+      "methode": "GET",
+      "pfad": "ki/ads",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_ad",
+      "beschreibung": "Shows one listing with all its details.",
+      "recht": "read_listings",
+      "methode": "GET",
+      "pfad": "ki/ads/{ad_id}",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ad_id"
+        ]
+      }
+    },
+    {
+      "name": "ad_statistics",
+      "beschreibung": "Impressions, parkings, e-mails, calls and WhatsApp contacts of one listing. Do not store or aggregate them: mobile.de allows them only for the listing's lifetime.",
+      "recht": "read_listings",
+      "methode": "GET",
+      "pfad": "ki/ads/{ad_id}/statistics",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ad_id"
+        ]
+      }
+    },
+    {
+      "name": "price_rating",
+      "beschreibung": "mobile.de's price rating for one listing (good, reasonable, increased price).",
+      "recht": "read_listings",
+      "methode": "GET",
+      "pfad": "ki/ads/{ad_id}/price-rating",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ad_id"
+        ]
+      }
+    },
+    {
+      "name": "preview_price_rating",
+      "beschreibung": "Which price rating a listing would get before it is online; ad in mobile.de's format.",
+      "recht": "read_listings",
+      "methode": "POST",
+      "pfad": "ki/price-rating-preview",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "ad"
+        ]
+      }
+    },
+    {
+      "name": "list_ratings",
+      "beschreibung": "Shows the dealer's ratings with their numbers.",
+      "recht": "ratings",
+      "methode": "GET",
+      "pfad": "ki/ratings",
+      "parameter": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "rating_overview",
+      "beschreibung": "Shows the dealer's overall rating (from the Gold package).",
+      "recht": "ratings",
+      "methode": "GET",
+      "pfad": "ki/ratings/overview",
+      "parameter": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "list_leads",
+      "beschreibung": "Shows customer inquiries from mobile.de with contact data, vehicle and everything since (replies, calls); since is an ISO time.",
+      "recht": "leads",
+      "methode": "GET",
+      "pfad": "ki/leads",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "since": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "change_price",
+      "beschreibung": "Sets a listing's gross consumer price; the net price follows the VAT rate.",
+      "recht": "edit_listings",
+      "methode": "PUT",
+      "pfad": "ki/ads/{ad_id}/price",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "ad_id",
+          "price"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "set_reserved",
+      "beschreibung": "Marks a listing as reserved or removes the mark.",
+      "recht": "edit_listings",
+      "methode": "PUT",
+      "pfad": "ki/ads/{ad_id}/reserved",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          },
+          "reserved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ad_id",
+          "reserved"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "renew_ad",
+      "beschreibung": "Renews a listing so it shows as new in the search; mobile.de may charge for it.",
+      "recht": "edit_listings",
+      "methode": "POST",
+      "pfad": "ki/ads/{ad_id}/renew",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ad_id"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "delete_ad",
+      "beschreibung": "Deletes a listing with all its images. Cannot be undone.",
+      "recht": "edit_listings",
+      "methode": "POST",
+      "pfad": "ki/ads/{ad_id}/delete",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ad_id"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "create_ad",
+      "beschreibung": "Creates a new listing. ad in mobile.de's format, at least vehicleClass, make and price.consumerPriceGross; images: each {\"url\": \"https://…\"} or {\"base64\": \"…\"}, JPG up to 2 MB, in the order wanted.",
+      "recht": "edit_listings",
+      "methode": "POST",
+      "pfad": "ki/ads",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad": {
+            "type": "object"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "ad"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "set_images",
+      "beschreibung": "Replaces all images of a listing; each {\"url\": \"https://…\"} or {\"base64\": \"…\"}, JPG up to 2 MB.",
+      "recht": "edit_listings",
+      "methode": "PUT",
+      "pfad": "ki/ads/{ad_id}/images",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "ad_id",
+          "images"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "send_direct_offer",
+      "beschreibung": "Sends a direct offer to everyone who parked the listing: 3 to 1000 characters, no phone number or e-mail address, valid 1 to 14 days.",
+      "recht": "edit_listings",
+      "methode": "PUT",
+      "pfad": "ki/ads/{ad_id}/direct-offer",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "days": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ad_id",
+          "text",
+          "days"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "invite_rating",
+      "beschreibung": "Invites the buyer of this vehicle to rate the dealer; only with their consent.",
+      "recht": "ratings",
+      "methode": "POST",
+      "pfad": "ki/ads/{ad_id}/rating-invite",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          },
+          "buyer_email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ad_id",
+          "buyer_email"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "reply_rating",
+      "beschreibung": "Publishes the dealer's reply to a rating (once per rating, up to 1000 characters).",
+      "recht": "ratings",
+      "methode": "PUT",
+      "pfad": "ki/ratings/{rating_id}/reply",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "rating_id": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "rating_id",
+          "comment"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "set_lead_status",
+      "beschreibung": "Reports the state of an inquiry to mobile.de: IN_PROGRESS, SOLD, NOT_INTERESTED or SPAM.",
+      "recht": "leads",
+      "methode": "PUT",
+      "pfad": "ki/leads/{lead_id}/status",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "lead_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "SOLD",
+              "NOT_INTERESTED",
+              "SPAM"
+            ]
+          }
+        },
+        "required": [
+          "lead_id",
+          "status"
+        ]
+      },
+      "freigabe": true
+    }
+  ],
+  "ereignisse": [
+    {
+      "art": "buyer_reply",
+      "titel": "Reply from a prospect",
+      "beschreibung": "A prospect answered an inquiry at mobile.de."
+    },
+    {
+      "art": "resubmission",
+      "titel": "New inquiry",
+      "beschreibung": "A prospect asked about a vehicle again."
+    },
+    {
+      "art": "missed_call",
+      "titel": "Missed call",
+      "beschreibung": "A call through mobile.de was not answered."
+    }
+  ],
+  "ereignisse_intervall_min": 5,
+  "karten": [
+    {
+      "titel": "mobile.de inquiries",
+      "pfad": "ki/karte"
+    }
+  ],
+  "anschluesse": [
+    {
+      "standard": "vilikon.kanal/1",
+      "name": "mobile.de",
+      "intervall_min": 5
+    }
+  ]
+}

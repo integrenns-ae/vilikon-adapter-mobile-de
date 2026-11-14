@@ -1,0 +1,443 @@
+{
+  "standard": "vilikon.modul/1",
+  "schluessel": "mobilede",
+  "name": "mobile.de",
+  "beschreibung": "Inserate, Preise, Bewertungen und Kundenanfragen des eigenen Händlerkontos bei mobile.de.",
+  "rechte": [
+    {
+      "key": "read_listings",
+      "titel": "mobile.de-Inserate einsehen",
+      "beschreibung": "Darf Inserate, Preisbewertungen und Statistik bei mobile.de ansehen.",
+      "sensibel": false
+    },
+    {
+      "key": "edit_listings",
+      "titel": "mobile.de-Inserate pflegen",
+      "beschreibung": "Darf Preise ändern, Inserate einstellen, erneuern, reservieren, löschen und Direktangebote vorschlagen; jede Änderung erst nach Freigabe.",
+      "sensibel": true
+    },
+    {
+      "key": "leads",
+      "titel": "mobile.de-Anfragen",
+      "beschreibung": "Darf Kundenanfragen von mobile.de mit Kontaktdaten lesen und ihren Stand zurückmelden.",
+      "sensibel": true
+    },
+    {
+      "key": "ratings",
+      "titel": "mobile.de-Bewertungen",
+      "beschreibung": "Darf Bewertungen lesen, Antworten und Einladungen vorschlagen; jede erst nach Freigabe.",
+      "sensibel": true
+    }
+  ],
+  "funktionen": [
+    {
+      "name": "seller_info",
+      "beschreibung": "Zeigt das Händlerkonto bei mobile.de: Name, Kundennummer, wie viele Bilder ein Inserat haben darf.",
+      "recht": "read_listings",
+      "methode": "GET",
+      "pfad": "ki/seller",
+      "parameter": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "list_ads",
+      "beschreibung": "Zeigt die Inserate in Kurzform; search behält nur Inserate mit allen Wörtern (Marke, Modell, interne Nummer).",
+      "recht": "read_listings",
+      "methode": "GET",
+      "pfad": "ki/ads",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_ad",
+      "beschreibung": "Zeigt ein Inserat mit allen Angaben.",
+      "recht": "read_listings",
+      "methode": "GET",
+      "pfad": "ki/ads/{ad_id}",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ad_id"
+        ]
+      }
+    },
+    {
+      "name": "ad_statistics",
+      "beschreibung": "Aufrufe, Parkungen, E-Mails, Anrufe und WhatsApp-Kontakte eines Inserats. Nicht speichern oder zusammenfassen: mobile.de erlaubt das nur für die Laufzeit des Inserats.",
+      "recht": "read_listings",
+      "methode": "GET",
+      "pfad": "ki/ads/{ad_id}/statistics",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ad_id"
+        ]
+      }
+    },
+    {
+      "name": "price_rating",
+      "beschreibung": "Preisbewertung von mobile.de für ein Inserat (guter Preis, fairer Preis, erhöhter Preis).",
+      "recht": "read_listings",
+      "methode": "GET",
+      "pfad": "ki/ads/{ad_id}/price-rating",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ad_id"
+        ]
+      }
+    },
+    {
+      "name": "preview_price_rating",
+      "beschreibung": "Welche Preisbewertung ein Inserat bekäme, bevor es eingestellt ist; ad im Format von mobile.de.",
+      "recht": "read_listings",
+      "methode": "POST",
+      "pfad": "ki/price-rating-preview",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "ad"
+        ]
+      }
+    },
+    {
+      "name": "list_ratings",
+      "beschreibung": "Zeigt die Bewertungen des Händlers mit ihren Nummern.",
+      "recht": "ratings",
+      "methode": "GET",
+      "pfad": "ki/ratings",
+      "parameter": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "rating_overview",
+      "beschreibung": "Zeigt die Gesamtbewertung des Händlers (ab Gold-Paket).",
+      "recht": "ratings",
+      "methode": "GET",
+      "pfad": "ki/ratings/overview",
+      "parameter": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "list_leads",
+      "beschreibung": "Zeigt Kundenanfragen von mobile.de mit Kontaktdaten, Fahrzeug und allem, was seitdem kam (Antworten, Anrufe); since ist eine ISO-Zeit.",
+      "recht": "leads",
+      "methode": "GET",
+      "pfad": "ki/leads",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "since": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "change_price",
+      "beschreibung": "Setzt den Endkundenpreis (brutto) eines Inserats; der Nettopreis folgt dem Steuersatz.",
+      "recht": "edit_listings",
+      "methode": "PUT",
+      "pfad": "ki/ads/{ad_id}/price",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "ad_id",
+          "price"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "set_reserved",
+      "beschreibung": "Markiert ein Inserat als reserviert oder hebt das auf.",
+      "recht": "edit_listings",
+      "methode": "PUT",
+      "pfad": "ki/ads/{ad_id}/reserved",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          },
+          "reserved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ad_id",
+          "reserved"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "renew_ad",
+      "beschreibung": "Erneuert ein Inserat, damit es in der Suche wieder als neu erscheint; kann bei mobile.de kosten.",
+      "recht": "edit_listings",
+      "methode": "POST",
+      "pfad": "ki/ads/{ad_id}/renew",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ad_id"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "delete_ad",
+      "beschreibung": "Löscht ein Inserat mit allen Bildern. Lässt sich nicht rückgängig machen.",
+      "recht": "edit_listings",
+      "methode": "POST",
+      "pfad": "ki/ads/{ad_id}/delete",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ad_id"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "create_ad",
+      "beschreibung": "Stellt ein neues Inserat ein. ad im Format von mobile.de, mindestens vehicleClass, make und price.consumerPriceGross; images: je {\"url\": \"https://…\"} oder {\"base64\": \"…\"}, JPG bis 2 MB, in der gewünschten Reihenfolge.",
+      "recht": "edit_listings",
+      "methode": "POST",
+      "pfad": "ki/ads",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad": {
+            "type": "object"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "ad"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "set_images",
+      "beschreibung": "Ersetzt alle Bilder eines Inserats; je {\"url\": \"https://…\"} oder {\"base64\": \"…\"}, JPG bis 2 MB.",
+      "recht": "edit_listings",
+      "methode": "PUT",
+      "pfad": "ki/ads/{ad_id}/images",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "ad_id",
+          "images"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "send_direct_offer",
+      "beschreibung": "Schickt allen, die das Inserat geparkt haben, ein Direktangebot: 3 bis 1000 Zeichen, ohne Telefonnummer oder E-Mail-Adresse, 1 bis 14 Tage gültig.",
+      "recht": "edit_listings",
+      "methode": "PUT",
+      "pfad": "ki/ads/{ad_id}/direct-offer",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "days": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ad_id",
+          "text",
+          "days"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "invite_rating",
+      "beschreibung": "Lädt den Käufer dieses Fahrzeugs ein, den Händler zu bewerten; nur mit seinem Einverständnis.",
+      "recht": "ratings",
+      "methode": "POST",
+      "pfad": "ki/ads/{ad_id}/rating-invite",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "ad_id": {
+            "type": "string"
+          },
+          "buyer_email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ad_id",
+          "buyer_email"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "reply_rating",
+      "beschreibung": "Veröffentlicht die Antwort des Händlers auf eine Bewertung (einmal je Bewertung, bis 1000 Zeichen).",
+      "recht": "ratings",
+      "methode": "PUT",
+      "pfad": "ki/ratings/{rating_id}/reply",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "rating_id": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "rating_id",
+          "comment"
+        ]
+      },
+      "freigabe": true
+    },
+    {
+      "name": "set_lead_status",
+      "beschreibung": "Meldet mobile.de den Stand einer Anfrage: IN_PROGRESS, SOLD, NOT_INTERESTED oder SPAM.",
+      "recht": "leads",
+      "methode": "PUT",
+      "pfad": "ki/leads/{lead_id}/status",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "lead_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "SOLD",
+              "NOT_INTERESTED",
+              "SPAM"
+            ]
+          }
+        },
+        "required": [
+          "lead_id",
+          "status"
+        ]
+      },
+      "freigabe": true
+    }
+  ],
+  "ereignisse": [
+    {
+      "art": "buyer_reply",
+      "titel": "Antwort eines Interessenten",
+      "beschreibung": "Ein Interessent hat auf eine Anfrage bei mobile.de geantwortet."
+    },
+    {
+      "art": "resubmission",
+      "titel": "Erneute Anfrage",
+      "beschreibung": "Ein Interessent hat zu einem Fahrzeug erneut angefragt."
+    },
+    {
+      "art": "missed_call",
+      "titel": "Verpasster Anruf",
+      "beschreibung": "Ein Anruf über mobile.de wurde nicht angenommen."
+    }
+  ],
+  "ereignisse_intervall_min": 5,
+  "karten": [
+    {
+      "titel": "mobile.de-Anfragen",
+      "pfad": "ki/karte"
+    }
+  ],
+  "anschluesse": [
+    {
+      "standard": "vilikon.kanal/1",
+      "name": "mobile.de",
+      "intervall_min": 5
+    }
+  ]
+}
