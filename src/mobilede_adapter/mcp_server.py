@@ -6,6 +6,8 @@ preview and a code, the second call with the same values and `confirmation` carr
 
 from __future__ import annotations
 
+import base64 as b64
+import binascii
 from collections.abc import Awaitable, Callable
 from typing import Any
 
@@ -13,6 +15,7 @@ from mcp.server.mcpserver import MCPServer
 from mcp.types import ToolAnnotations
 
 from .guard import Plan, WriteGuard
+from .images import MAX_INPUT, ImageError
 from .service import Service
 
 INSTRUCTIONS = (
@@ -95,6 +98,26 @@ def build(service: Service) -> MCPServer:
         replies, calls. `since` is an ISO time; empty means everything from the last 30 days."""
         return await safe(lambda: service.list_leads(since, limit))
 
+    @server.tool(annotations=READ)
+    async def reference_data(kind: str, make: str = "", vehicle_class: str = "Car", search: str = "") -> dict:
+        """mobile.de's fixed values for a listing: `makes` and `models` (needs `make`) of a vehicle class, its
+        `categories`, or a table such as `fuels`, `gearboxes`, `colors`. `search` filters by words. Put the `name`
+        into the listing (make, model, category, fuel, ...), never the description."""
+        return await safe(lambda: service.reference_data(kind, make, vehicle_class, search))
+
+    @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=False))
+    async def stage_image(path: str = "", base64: str = "") -> dict:
+        """Hand over a photo for a listing: `path` of a file on the machine this server runs on, or `base64`. JPG,
+        PNG, HEIC or WebP; it is made into a JPG mobile.de takes and kept here for a week. Nothing goes to mobile.de.
+        Returns an id for create_ad or set_images: {"image": "img-..."}."""
+
+        async def run() -> dict:
+            if path:
+                return service.stage_image(_read_file(path))
+            return service.stage_image(_decode(base64))
+
+        return await safe(run)
+
     # ---------- write ----------
 
     @server.tool(annotations=WRITE)
@@ -122,14 +145,15 @@ def build(service: Service) -> MCPServer:
     @server.tool(annotations=WRITE)
     async def create_ad(ad: dict, images: list[dict] | None = None, confirmation: str = "") -> dict:
         """Create a listing. `ad` in mobile.de's listing format, at least vehicleClass, make and
-        price.consumerPriceGross. `images`: each {"url": "https://..."} or {"base64": "..."}, JPG up to 2 MB, in
-        the order they should appear."""
+        price.consumerPriceGross. `images`: each {"image": "img-..."} (from stage_image), {"url": "https://..."}
+        or {"base64": "..."} (JPG up to 2 MB), in the order they should appear."""
         args = {"ad": ad, "images": images or []}
         return await write("create_ad", args, lambda: service.plan_create_ad(ad, images), confirmation)
 
     @server.tool(annotations=DESTRUCTIVE)
     async def set_images(ad_id: str, images: list[dict], confirmation: str = "") -> dict:
-        """Replace all images of a listing. Each {"url": "https://..."} or {"base64": "..."}, JPG up to 2 MB."""
+        """Replace all images of a listing. Each {"image": "img-..."} (from stage_image), {"url": "https://..."}
+        or {"base64": "..."} (JPG up to 2 MB)."""
         args = {"ad_id": ad_id, "images": images}
         return await write("set_images", args, lambda: service.plan_set_images(ad_id, images), confirmation)
 
@@ -161,3 +185,21 @@ def build(service: Service) -> MCPServer:
         return await write("set_lead_status", args, lambda: service.plan_set_lead_status(lead_id, status), confirmation)
 
     return server
+
+
+def _read_file(path: str) -> bytes:
+    try:
+        with open(path, "rb") as f:
+            return f.read(MAX_INPUT + 1)
+    except OSError:
+        raise ImageError("image_missing_file") from None
+
+
+def _decode(text: str) -> bytes:
+    try:
+        data = b64.b64decode(str(text).split(",", 1)[-1], validate=True)
+    except (binascii.Error, ValueError):
+        data = b""
+    if not data:
+        raise ImageError("image_missing_file")
+    return data

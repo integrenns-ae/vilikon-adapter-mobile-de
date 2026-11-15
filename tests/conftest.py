@@ -56,6 +56,19 @@ BUYER = {
 VEHICLE = {"mobileAdId": "207648", "make": "Musterwagen", "model": "M3", "internalNumber": "MF-207648"}
 
 
+REFDATA = {
+    "/refdata/sites/GERMANY/classes/Car/makes": [
+        {"name": "MUSTERWAGEN", "description": "Musterwagen"},
+        {"name": "BEISPIEL", "description": "Beispiel Motors"},
+    ],
+    "/refdata/sites/GERMANY/classes/Car/makes/MUSTERWAGEN/models": [
+        {"name": "M3", "description": "M3"},
+        {"name": "M5", "description": "M5 Kombi"},
+    ],
+    "/refdata/fuels": [{"name": "PETROL", "description": "Benzin"}, {"name": "DIESEL", "description": "Diesel"}],
+}
+
+
 class FakeMobile:
     def __init__(self) -> None:
         self.sellers = [
@@ -63,6 +76,7 @@ class FakeMobile:
                 "mobileSellerId": SELLER,
                 "customerNumber": "8",
                 "companyName": "Autohaus Muster GmbH",
+                "siteId": "GERMANY",
                 "settings": {"maxImages": 3},
             }
         ]
@@ -127,6 +141,9 @@ class FakeMobile:
             if request.content and "json" in request.headers.get("content-type", "")
             else None
         )
+        if path.startswith("/refdata/"):
+            values = REFDATA.get(path)
+            return httpx.Response(200, json={"values": values}) if values is not None else httpx.Response(404)
         if path == "/seller-api/sellers":
             return httpx.Response(200, json={"sellers": self.sellers})
         if path == f"/seller-api/sellers/{SELLER}":

@@ -27,12 +27,18 @@ MCP client                         Vilikon cockpit
 | `seller_info`, `list_ads`, `get_ad` | `change_price`, `set_reserved`, `renew_ad`, `delete_ad` |
 | `ad_statistics`, `price_rating`, `preview_price_rating` | `create_ad` (with images), `set_images`, `send_direct_offer` |
 | `list_ratings`, `rating_overview` | `reply_rating`, `invite_rating` |
-| `list_leads`, `check_connection` | `set_lead_status` |
+| `list_leads`, `check_connection`, `reference_data` | `set_lead_status` |
+| `stage_image` (kept locally, nothing goes to mobile.de) | |
 
 - **Listings**: mobile.de wants the complete listing on every update, so a change fetches the listing, changes one
   field and sends it back whole. Changing the gross price recomputes the net price from the listing's VAT rate.
-- **Images**: JPG only, up to 2 MB each, at most the dealer's `maxImages`, uploaded one after the other. Pass each
-  as `{"url": "https://…"}` or `{"base64": "…"}`.
+- **Images**: mobile.de takes JPG only, up to 2 MB each, at most the dealer's `maxImages`, uploaded one after the
+  other. Hand a photo over with `stage_image` (a file path or base64; JPG, PNG, HEIC, WebP): it is turned upright,
+  stripped of its metadata (a phone writes the location into it), fitted below 2 MB and kept in `DATA_DIR/images` for
+  a week under an id. Pass each image as `{"image": "img-…"}`, `{"url": "https://…"}` or `{"base64": "…"}`.
+- **Reference data**: make, model, category, fuel, gearbox and the other fixed values are codes from mobile.de's
+  reference tables (`/refdata`, no login needed). `reference_data` looks them up for the dealer's site, with a search,
+  and keeps them for a day.
 - **New listings** carry an `X-Mobile-Insertion-Request-Id` derived from their content: a repeat after a timeout
   creates nothing twice.
 - **Inquiries**: mobile.de has no push. The adapter polls the Lead API events with its cursor, merges the events of
@@ -100,7 +106,9 @@ driven by `ADAPTER.json`, and the owner types the credentials into a card in the
    root.
 4. Request the credentials `MOBILE_DE_USER`, `MOBILE_DE_PASSWORD` (and `MOBILE_DE_SELLER_ID` if needed) with
    `werkzeug_zugang_anfordern`; the owner enters them.
-5. Propose the change. Once the owner approves it, the tool runs, the rights `modul.mobilede.*` can be granted, the
+5. Let the employees who list vehicles use the tool (the “Tools” page): module functions send JSON only, so a photo
+   reaches `ki/images` through the generic tool call, which sends a file of the employee's workspace.
+6. Propose the change. Once the owner approves it, the tool runs, the rights `modul.mobilede.*` can be granted, the
    channel “mobile.de” appears under acquisition and `ki/pruefen` tells whether the credentials work.
 
 Inside Vilikon (`BASE_PATH` below `/werkzeug/`) the `/ki/` paths are on and `/mcp` is off unless `ADAPTER_TOKEN` is
@@ -113,6 +121,7 @@ owner's yes; the same approval twice does the work once.
 | `GET ki/ereignisse?seit=` | The buyer answered, asked again, or a call was missed, on a known inquiry |
 | `GET ki/karte` | Dashboard card: inquiries of the last 7 days |
 | `GET ki/pruefen` | Whether the credentials work for both APIs |
+| `POST ki/images` | A photo as a file (multipart, any field) or as the body; answers its id. No approval: it stays here |
 
 `ADAPTER.json` describes build, start, check and credentials for Vilikon's future adapter catalog.
 

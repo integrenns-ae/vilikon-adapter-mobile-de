@@ -5,6 +5,8 @@
   header is refused; the same header twice does the work once.
 - `vilikon.kanal/1`: `GET ki/kanal/leads` hands new inquiries to the cockpit's lead intake.
 - `ki/ereignisse`: what happens on a known inquiry (the buyer answered, asked again, a missed call) becomes a case.
+- `ki/images`: a photo handed over as a file (Vilikon's tool call sends a file of the employee's workspace) is kept
+  for a listing; nothing goes to mobile.de before the approved create_ad or set_images.
 - `ki/karte`: a small dashboard card. Answers from local data only, within the cockpit's 5 seconds.
 Errors are `{"fehler": "..."}` with a 4xx/5xx status, in plain language.
 """
@@ -26,6 +28,7 @@ from starlette.routing import Route
 from . import leads as lead_lib
 from .client import ApiError
 from .guard import Plan
+from .images import ImageError
 from .service import BadId, Service, UserError
 
 APPROVAL = "x-vilikon-freigabe"
@@ -33,6 +36,7 @@ LEAD_MARGIN = timedelta(days=1)  # the cockpit counts each externe_id once: rath
 EVENT_WINDOW = timedelta(days=3)  # the cockpit counts each event id once and takes at most 5 per call
 MAX_LEADS = 100
 MAX_EVENTS = 20
+MAX_UPLOAD = 30 * 1024 * 1024  # images.MAX_INPUT decides; this only stops reading
 
 
 class Approvals:
@@ -65,7 +69,7 @@ def routes(service: Service) -> list[Route]:
     approvals = Approvals(service.settings.data_dir)
 
     def error(e: Exception) -> JSONResponse:
-        status = 400 if isinstance(e, UserError | BadId) else 502
+        status = 400 if isinstance(e, UserError | BadId | ImageError) else 502
         if isinstance(e, ApiError) and e.status in (401, 403, 404, 409):
             status = {401: 502, 403: 403, 404: 404, 409: 409}[e.status]
         return JSONResponse({"fehler": service.explain(e)}, status_code=status)
@@ -167,6 +171,19 @@ def routes(service: Service) -> list[Route]:
     async def check(request: Request) -> dict:
         return await service.check()
 
+    async def stage_image(request: Request) -> dict:
+        data = b""
+        if request.headers.get("content-type", "").startswith("multipart/"):
+            async with request.form(max_files=1, max_fields=20) as form:
+                upload = next((v for v in form.values() if hasattr(v, "read")), None)
+                if upload is not None:
+                    data = await upload.read(MAX_UPLOAD + 1)
+        else:
+            data = await request.body()
+        if not data:
+            raise UserError(t("image_missing_file"))
+        return service.stage_image(data[: MAX_UPLOAD + 1])
+
     return [
         Route("/", page),
         Route("/ki/pruefen", read(check)),
@@ -184,6 +201,16 @@ def routes(service: Service) -> list[Route]:
         Route("/ki/price-rating-preview", read(_preview_price(service)), methods=["POST"]),
         Route("/ki/ratings", read(lambda r: service.list_ratings())),
         Route("/ki/ratings/overview", read(lambda r: service.rating_overview())),
+        Route(
+            "/ki/reference/{kind}",
+            read(
+                lambda r: service.reference_data(
+                    p(r, "kind"), q(r, "make"), q(r, "vehicle_class", "Car"), q(r, "search")
+                )
+            ),
+        ),
+        # a photo for a listing: kept here, so no approval yet
+        Route("/ki/images", read(stage_image), methods=["POST"]),
         Route("/ki/leads", read(lambda r: service.list_leads(q(r, "since"), int(q(r, "limit", "50") or 50)))),
         # writes, each only after the owner's approval
         Route(

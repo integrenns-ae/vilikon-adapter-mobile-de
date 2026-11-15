@@ -13,6 +13,7 @@ import copy
 import hashlib
 import json
 import re
+import time
 from datetime import UTC, datetime
 from typing import Any
 
@@ -22,10 +23,15 @@ from . import leads as lead_lib
 from .client import ApiError, MobileClient, Unreachable
 from .config import Settings
 from .guard import Plan
+from .images import ImageError, ImageStore
 from .leads import LeadStore
 from .texts import Texts
 
 MAX_IMAGE_BYTES = 2_097_152
+REFDATA_KIND = re.compile(r"^[a-z]{3,30}$")
+REFDATA_NAME = re.compile(r"^[A-Za-z0-9_-]{1,60}$")
+REFDATA_CACHE_S = 86400
+MAX_REFDATA = 60
 _CONTACT = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+|(?:\+|\b0)\d[\d\s/().-]{5,}\d")
 _EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
@@ -45,6 +51,8 @@ class Service:
         self.client = MobileClient(settings, transport=transport)
         self._image_http = httpx.AsyncClient(timeout=30.0, transport=transport, follow_redirects=True)
         self.store = LeadStore(settings.data_dir)
+        self.images = ImageStore(settings.data_dir)
+        self._refdata: dict[str, tuple[float, list[dict]]] = {}
         self._seller_id = settings.seller_id
 
     async def aclose(self) -> None:
@@ -58,6 +66,8 @@ class Service:
         t = self.t
         if isinstance(e, UserError):
             return str(e)
+        if isinstance(e, ImageError):
+            return t(e.key)
         if isinstance(e, BadId):
             return t("id_invalid", id=str(e))
         if isinstance(e, Unreachable):
@@ -185,6 +195,54 @@ class Service:
         found = self.store.since(lead_lib.parse_time(since) if since else None)
         limit = max(1, min(int(limit or 50), 200))
         return {"found": len(found), "leads": [lead_lib.summary(x, self.t) for x in found[-limit:]]}
+
+    async def reference_data(self, kind: str, make: str = "", vehicle_class: str = "Car", search: str = "") -> dict:
+        """mobile.de's fixed values: `makes` and `models` (of `make`) of a vehicle class, its `categories`, or a table
+        such as `fuels`, `gearboxes`, `colors`. An ad takes the `name`, never the description."""
+        kind = kind.strip().lower()
+        cls = vehicle_class.strip() or "Car"
+        if not REFDATA_KIND.match(kind) or not REFDATA_NAME.match(cls) or (make and not REFDATA_NAME.match(make)):
+            raise UserError(self.t("refdata_invalid"))
+        if kind == "models" and not make:
+            raise UserError(self.t("refdata_make_missing"))
+        site = await self._site()
+        prefix = f"/refdata/sites/{site}" if site else "/refdata"
+        path = {
+            "makes": f"{prefix}/classes/{cls}/makes",
+            "models": f"{prefix}/classes/{cls}/makes/{make.upper()}/models",
+            "categories": f"/refdata/classes/{cls}/categories",
+        }.get(kind, f"/refdata/{kind}")
+        values = await self._refdata_values(path)
+        words = [w for w in re.split(r"\W+", search.lower()) if w]
+        hits = [v for v in values if all(w in f"{v['name']} {v['description']}".lower() for w in words)]
+        return {"kind": kind, "values": hits[:MAX_REFDATA], "more": max(0, len(hits) - MAX_REFDATA)}
+
+    async def _site(self) -> str:
+        try:
+            s = await self.client.seller(await self.seller_id())
+        except Exception:  # reference data needs no account; without one the general tables count
+            return ""
+        site = str(s.get("siteId") or "")
+        return site if REFDATA_NAME.match(site) else ""
+
+    async def _refdata_values(self, path: str) -> list[dict]:
+        hit = self._refdata.get(path)
+        if hit and time.monotonic() - hit[0] < REFDATA_CACHE_S:
+            return hit[1]
+        lang = "en" if self.settings.lang == "en" else "de"
+        data = (await self.client.request("GET", path, headers={"Accept-Language": lang})).data or {}
+        values = [
+            {"name": str(v.get("name") or ""), "description": str(v.get("description") or "")}
+            for v in (data.get("values") or [])
+            if isinstance(v, dict) and v.get("name")
+        ]
+        self._refdata[path] = (time.monotonic(), values)
+        return values
+
+    def stage_image(self, data: bytes) -> dict:
+        """Keep a photo for a listing; the id goes into create_ad or set_images as {"image": id}."""
+        out = self.images.add(data)
+        return out | {"text": self.t("image_staged", image=out["image"], width=out["width"], height=out["height"])}
 
     # ---------- writes: each returns a Plan ----------
 
@@ -354,8 +412,12 @@ class Service:
             return []
         out = []
         for item in images:
-            item = {"url": item} if isinstance(item, str) else (item or {})
-            if item.get("base64"):
+            if isinstance(item, str):
+                item = {"image": item} if item.startswith("img-") else {"url": item}
+            item = item or {}
+            if item.get("image"):
+                data = self.images.get(item["image"])
+            elif item.get("base64"):
                 try:
                     data = base64.b64decode(str(item["base64"]).split(",", 1)[-1], validate=True)
                 except (binascii.Error, ValueError):

@@ -36,10 +36,20 @@ DE: dict[str, str] = {
     "email_invalid": "Das ist keine gültige E-Mail-Adresse.",
     "status_invalid": "Status muss einer von {values} sein.",
     "images_missing": "Es fehlen Bilder.",
-    "image_source": "Ein Bild braucht entweder „url“ (https) oder „base64“.",
+    "image_source": "Ein Bild braucht „image“ (ein übergebenes Foto), „url“ (https) oder „base64“.",
     "image_too_big": "Ein Bild ist größer als 2 MB.",
     "image_fetch": "Ein Bild ließ sich nicht laden: {error}",
     "image_max": "mobile.de erlaubt für dieses Händlerkonto höchstens {max} Bilder, es sind {count}.",
+    "image_unreadable": "Die Datei ist kein Bild, das ich lesen kann (JPG, PNG, HEIC, WebP).",
+    "image_input_too_big": "Die Datei ist größer als 30 MB.",
+    "image_unknown": "Dieses Bild kenne ich nicht (mehr). Bitte das Foto noch einmal übergeben; "
+    "gemerkt wird es eine Woche.",
+    "image_missing_file": "Es kam keine Datei an. Das Foto als Datei schicken (Feld beliebig) oder als Bild im Rumpf.",
+    "image_staged": "Foto bereit als {image} ({width} × {height} Pixel). "
+    'Für create_ad oder set_images: {{"image": "{image}"}}.',
+    "refdata_invalid": "Unbekannte Art oder ungültiger Name. Arten: makes, models, categories "
+    "oder eine Tabelle wie fuels, gearboxes, colors.",
+    "refdata_make_missing": "Für models fehlt make, z. B. make=VW.",
     "ad_invalid": "Das Inserat braucht mindestens Fahrzeugklasse, Marke und Preis.",
     # write guard
     "writes_off": "Änderungen bei mobile.de sind ausgeschaltet (MOBILE_DE_WRITES=off).",
@@ -134,10 +144,19 @@ EN: dict[str, str] = {
     "email_invalid": "That is not a valid e-mail address.",
     "status_invalid": "Status must be one of {values}.",
     "images_missing": "Images are missing.",
-    "image_source": "An image needs either “url” (https) or “base64”.",
+    "image_source": "An image needs “image” (a handed-over photo), “url” (https) or “base64”.",
     "image_too_big": "An image is larger than 2 MB.",
     "image_fetch": "An image could not be loaded: {error}",
     "image_max": "mobile.de allows at most {max} images for this dealer account, there are {count}.",
+    "image_unreadable": "The file is not an image I can read (JPG, PNG, HEIC, WebP).",
+    "image_input_too_big": "The file is larger than 30 MB.",
+    "image_unknown": "I do not know this image (any more). Please hand over the photo again; it is kept for a week.",
+    "image_missing_file": "No file arrived. Send the photo as a file (any field) or as an image body.",
+    "image_staged": "Photo ready as {image} ({width} × {height} pixels). "
+    'For create_ad or set_images: {{"image": "{image}"}}.',
+    "refdata_invalid": "Unknown kind or invalid name. Kinds: makes, models, categories "
+    "or a table such as fuels, gearboxes, colors.",
+    "refdata_make_missing": "models needs make, e.g. make=VW.",
     "ad_invalid": "The listing needs at least vehicle class, make and price.",
     "writes_off": "Changes at mobile.de are switched off (MOBILE_DE_WRITES=off).",
     "confirm_needed": "Nothing changed yet. To carry it out, call the same function with the same values and "

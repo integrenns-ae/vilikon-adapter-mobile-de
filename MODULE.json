@@ -172,6 +172,33 @@
       }
     },
     {
+      "name": "reference_data",
+      "beschreibung": "Zeigt die festen Werte von mobile.de für ein Inserat: kind makes (Marken) oder models (Modelle, braucht make) einer vehicle_class (Standard Car), categories oder eine Tabelle wie fuels, gearboxes, colors; search filtert. Ins Inserat gehört der name, nie die description.",
+      "recht": "read_listings",
+      "methode": "GET",
+      "pfad": "ki/reference/{kind}",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "make": {
+            "type": "string"
+          },
+          "vehicle_class": {
+            "type": "string"
+          },
+          "search": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      }
+    },
+    {
       "name": "change_price",
       "beschreibung": "Setzt den Endkundenpreis (brutto) eines Inserats; der Nettopreis folgt dem Steuersatz.",
       "recht": "edit_listings",
@@ -257,7 +284,7 @@
     },
     {
       "name": "create_ad",
-      "beschreibung": "Stellt ein neues Inserat ein. ad im Format von mobile.de, mindestens vehicleClass, make und price.consumerPriceGross; images: je {\"url\": \"https://…\"} oder {\"base64\": \"…\"}, JPG bis 2 MB, in der gewünschten Reihenfolge.",
+      "beschreibung": "Stellt ein neues Inserat ein. ad im Format von mobile.de, mindestens vehicleClass, make und price.consumerPriceGross; images: je {\"image\": \"img-…\"} (ein übergebenes Foto, siehe Einweisung), {\"url\": \"https://…\"} oder {\"base64\": \"…\"} (JPG bis 2 MB), in der gewünschten Reihenfolge.",
       "recht": "edit_listings",
       "methode": "POST",
       "pfad": "ki/ads",
@@ -282,7 +309,7 @@
     },
     {
       "name": "set_images",
-      "beschreibung": "Ersetzt alle Bilder eines Inserats; je {\"url\": \"https://…\"} oder {\"base64\": \"…\"}, JPG bis 2 MB.",
+      "beschreibung": "Ersetzt alle Bilder eines Inserats; je {\"image\": \"img-…\"} (ein übergebenes Foto), {\"url\": \"https://…\"} oder {\"base64\": \"…\"} (JPG bis 2 MB).",
       "recht": "edit_listings",
       "methode": "PUT",
       "pfad": "ki/ads/{ad_id}/images",

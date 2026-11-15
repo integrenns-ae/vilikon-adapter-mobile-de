@@ -172,6 +172,33 @@
       }
     },
     {
+      "name": "reference_data",
+      "beschreibung": "Shows mobile.de's fixed values for a listing: kind makes or models (needs make) of a vehicle_class (default Car), categories or a table such as fuels, gearboxes, colors; search filters. The listing takes the name, never the description.",
+      "recht": "read_listings",
+      "methode": "GET",
+      "pfad": "ki/reference/{kind}",
+      "parameter": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "make": {
+            "type": "string"
+          },
+          "vehicle_class": {
+            "type": "string"
+          },
+          "search": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      }
+    },
+    {
       "name": "change_price",
       "beschreibung": "Sets a listing's gross consumer price; the net price follows the VAT rate.",
       "recht": "edit_listings",
@@ -257,7 +284,7 @@
     },
     {
       "name": "create_ad",
-      "beschreibung": "Creates a new listing. ad in mobile.de's format, at least vehicleClass, make and price.consumerPriceGross; images: each {\"url\": \"https://…\"} or {\"base64\": \"…\"}, JPG up to 2 MB, in the order wanted.",
+      "beschreibung": "Creates a new listing. ad in mobile.de's format, at least vehicleClass, make and price.consumerPriceGross; images: each {\"image\": \"img-…\"} (a handed-over photo, see the briefing), {\"url\": \"https://…\"} or {\"base64\": \"…\"} (JPG up to 2 MB), in the order wanted.",
       "recht": "edit_listings",
       "methode": "POST",
       "pfad": "ki/ads",
@@ -282,7 +309,7 @@
     },
     {
       "name": "set_images",
-      "beschreibung": "Replaces all images of a listing; each {\"url\": \"https://…\"} or {\"base64\": \"…\"}, JPG up to 2 MB.",
+      "beschreibung": "Replaces all images of a listing; each {\"image\": \"img-…\"} (a handed-over photo), {\"url\": \"https://…\"} or {\"base64\": \"…\"} (JPG up to 2 MB).",
       "recht": "edit_listings",
       "methode": "PUT",
       "pfad": "ki/ads/{ad_id}/images",
