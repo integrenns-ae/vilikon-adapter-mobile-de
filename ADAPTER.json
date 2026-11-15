@@ -7,8 +7,8 @@
   "check": "ki/pruefen",
   "languages": {
     "en": {
-      "MODUL.json": "vilikon/en/MODUL.json",
-      "MITARBEITER.md": "vilikon/en/MITARBEITER.md"
+      "MODULE.json": "vilikon/en/MODULE.json",
+      "BRIEFING.md": "vilikon/en/BRIEFING.md"
     }
   },
   "credentials": [

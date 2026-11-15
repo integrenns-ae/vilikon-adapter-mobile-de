@@ -121,7 +121,7 @@ def test_texts_have_the_same_keys():
 
 def test_vilikon_files_match_the_routes(service):
     paths = {r.path for r in vilikon.routes(service)}
-    for f in (ROOT / "MODUL.json", ROOT / "vilikon/en/MODUL.json"):
+    for f in (ROOT / "MODULE.json", ROOT / "vilikon/en/MODULE.json"):
         modul = json.loads(f.read_text())
         assert modul["standard"] == "vilikon.modul/1" and modul["schluessel"] == "mobilede"
         rights = {r["key"] for r in modul["rechte"]}
@@ -132,7 +132,7 @@ def test_vilikon_files_match_the_routes(service):
                 "name"
             ]
         assert modul["anschluesse"][0]["standard"] == "vilikon.kanal/1"
-    de, en = (json.loads((ROOT / p).read_text()) for p in ("MODUL.json", "vilikon/en/MODUL.json"))
+    de, en = (json.loads((ROOT / p).read_text()) for p in ("MODULE.json", "vilikon/en/MODULE.json"))
     assert [f["name"] for f in de["funktionen"]] == [f["name"] for f in en["funktionen"]]
 
 

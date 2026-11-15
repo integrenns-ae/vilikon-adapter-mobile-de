@@ -1,6 +1,6 @@
 """The Vilikon front: the same functions as HTTP paths under /ki/, as Vilikon's standards describe them.
 
-- `vilikon.modul/1` (MODUL.json): functions for employees. Every write is `"freigabe": true`, so the cockpit shows
+- `vilikon.modul/1` (MODULE.json): functions for employees. Every write is `"freigabe": true`, so the cockpit shows
   the owner a card first and only his yes calls the path, with the header `X-Vilikon-Freigabe`. A write without that
   header is refused; the same header twice does the work once.
 - `vilikon.kanal/1`: `GET ki/kanal/leads` hands new inquiries to the cockpit's lead intake.

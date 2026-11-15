@@ -4,7 +4,7 @@ An adapter for **one car dealer's own mobile.de account**: listings, prices, sta
 inquiries. MCP in front, the official mobile.de REST APIs behind.
 
 - **On its own**: an MCP server (stdio or Streamable HTTP) for any MCP client.
-- **In Vilikon**: a tool with `MODUL.json` (functions for employees, every change behind the owner's approval) and a
+- **In Vilikon**: a tool with `MODULE.json` (functions for employees, every change behind the owner's approval) and a
   lead channel (`vilikon.kanal/1`) that hands new inquiries to the cockpit's lead intake.
 
 This repository is a template. Each dealer runs their own copy with their own mobile.de API user, for their own
@@ -12,7 +12,7 @@ account only. The adapter never serves several dealers and never holds anyone el
 
 ```
 MCP client                         Vilikon cockpit
-    │ /mcp or stdio                    │ /ki/…  (MODUL.json, vilikon.kanal/1)
+    │ /mcp or stdio                    │ /ki/…  (MODULE.json, vilikon.kanal/1)
     └──────────────┬───────────────────┘
             service.py   checks, read-change-write, previews
             client.py    Seller API + Lead API, HTTP basic auth, retries
@@ -96,7 +96,7 @@ driven by `ADAPTER.json`, and the owner types the credentials into a card in the
 2. Build `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt .`, start
    `.venv/bin/python -m mobilede_adapter serve` (the cockpit moves the folder on publishing, so the start must not
    rely on the paths baked into `.venv/bin` scripts).
-3. On an English instance, copy `vilikon/en/MODUL.json` and `vilikon/en/MITARBEITER.md` over the German ones in the
+3. On an English instance, copy `vilikon/en/MODULE.json` and `vilikon/en/BRIEFING.md` over the German ones in the
    root.
 4. Request the credentials `MOBILE_DE_USER`, `MOBILE_DE_PASSWORD` (and `MOBILE_DE_SELLER_ID` if needed) with
    `werkzeug_zugang_anfordern`; the owner enters them.
