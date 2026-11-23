@@ -3,7 +3,8 @@
 - `vilikon.modul/1` (MODULE.json): functions for employees. Every write is `"freigabe": true`, so the cockpit shows
   the owner a card first and only his yes calls the path, with the header `X-Vilikon-Freigabe`. A write without that
   header is refused; the same header twice does the work once.
-- `vilikon.kanal/1`: `GET ki/kanal/leads` hands new inquiries to the cockpit's lead intake.
+- `vilikon.kanal/1`: `GET ki/kanal/leads` hands new inquiries to the cockpit's lead intake. Without the Lead API
+  (not enabled for the API user) it answers an empty list, so the listings work on their own.
 - `ki/ereignisse`: what happens on a known inquiry (the buyer answered, asked again, a missed call) becomes a case.
 - `ki/images`: a photo handed over as a file (Vilikon's tool call sends a file of the employee's workspace) is kept
   for a listing; nothing goes to mobile.de before the approved create_ad or set_images.
@@ -150,7 +151,7 @@ def routes(service: Service) -> list[Route]:
         recent = service.store.since(week)
         return {
             "zahl": str(len(recent)),
-            "text": t("card_text"),
+            "text": t("card_leads_off") if service.leads_off else t("card_text"),
             "ton": "warn" if recent else "neutral",
             "zeilen": [
                 {

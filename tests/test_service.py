@@ -53,6 +53,12 @@ async def test_package_limit_is_explained(service):
     assert "Gold" in service.explain(e.value)
 
 
+def test_an_unknown_error_key_is_named(service):
+    from mobilede_adapter.client import ApiError
+
+    assert service.explain(ApiError(500, [{"key": "internal"}])) == "mobile.de meldet: internal"
+
+
 async def test_change_price_sends_the_whole_ad_and_follows_vat(service, fake):
     plan = await service.plan_change_price("207648", 11990)
     assert "12.990 € → 11.990 €" in plan.preview

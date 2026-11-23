@@ -1,6 +1,6 @@
 [project]
 name = "vilikon-adapter-mobile-de"
-version = "0.1.0"
+version = "0.2.0"
 description = "MCP server and Vilikon tool for one car dealer's own mobile.de account (Seller API and Lead API)"
 readme = "README.md"
 license = "MIT"

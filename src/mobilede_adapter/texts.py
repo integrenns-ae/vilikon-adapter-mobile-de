@@ -108,6 +108,11 @@ DE: dict[str, str] = {
     "event_buyer": "einem Interessenten",
     # dashboard card
     "card_text": "neue Anfragen in 7 Tagen",
+    "card_leads_off": "Lead API nicht freigeschaltet: Anfragen kommen per E-Mail",
+    "leads_off": (
+        "Die Lead API ist für diesen Zugang nicht freigeschaltet, deshalb kommen hier keine Anfragen an. Sie kommen "
+        "weiter per E-Mail; freischalten lässt sie der Händler beim mobile.de-Kundenservice."
+    ),
     # status page
     "page_title": "mobile.de",
     "page_ok": "Der Adapter läuft.",
@@ -211,6 +216,11 @@ EN: dict[str, str] = {
     "event_missed_call_title": "Missed call from {name}",
     "event_buyer": "a prospect",
     "card_text": "new inquiries in 7 days",
+    "card_leads_off": "Lead API not enabled: inquiries come by e-mail",
+    "leads_off": (
+        "The Lead API is not enabled for this API user, so no inquiries arrive here. They still come by e-mail; the "
+        "dealer has mobile.de customer service enable it."
+    ),
     "page_title": "mobile.de",
     "page_ok": "The adapter is running.",
 }
@@ -223,7 +233,7 @@ class Texts:
         self.lang = lang if lang in CATALOGS else "de"
         self._catalog = CATALOGS[self.lang]
 
-    def __call__(self, key: str, **values: object) -> str:
+    def __call__(self, key: str, /, **values: object) -> str:  # `/`: a value may be called key, too
         return self._catalog[key].format(**values)
 
     def money(self, amount: float | int | None, currency: str = "EUR") -> str:

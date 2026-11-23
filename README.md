@@ -43,6 +43,8 @@ MCP client                         Vilikon cockpit
   creates nothing twice.
 - **Inquiries**: mobile.de has no push. The adapter polls the Lead API events with its cursor, merges the events of
   one lead (first inquiry, the buyer's reply, calls) and keeps them for 30 days in `DATA_DIR/leads.json` (mode 0600).
+  Without the Lead API (mobile.de answers 401 or 403 there while the Seller API works) the channel stays empty and
+  `list_leads` and the card say why; a wrong password still fails on the Seller API.
 - **Statistics** are passed through and never stored: mobile.de allows them only for the listing's lifetime.
 
 ## Getting access at mobile.de

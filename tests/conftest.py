@@ -125,6 +125,7 @@ class FakeMobile:
         self.created: dict[str, str] = {}
         self.lead_status: dict[str, dict] = {}
         self.fail_next: list[int] = []
+        self.lead_api = True  # False: the API user has the Seller API only, as mobile.de enables it by default
 
     def handler(self, request: httpx.Request) -> httpx.Response:
         self.calls.append(request)
@@ -205,6 +206,8 @@ class FakeMobile:
             return httpx.Response(200)
         if path.startswith(f"/seller-api/sellers/{SELLER}/rating/invites/"):
             return httpx.Response(200)
+        if path.startswith("/lead-api/") and not self.lead_api:
+            return httpx.Response(401)
         if path == "/lead-api/status":
             return httpx.Response(200, json={"status": "UP"})
         if path == f"/lead-api/sellers/{SELLER}/events":

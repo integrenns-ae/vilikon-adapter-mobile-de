@@ -101,6 +101,23 @@ async def test_ki_reads_channel_events_and_card(service):
     assert c.get("/ki/ads/999").status_code == 404 and "fehler" in c.get("/ki/ads/999").json()
 
 
+async def test_without_the_lead_api_the_channel_is_empty_not_broken(service, fake):
+    fake.lead_api = False
+    c = ki_client(service)
+    leads = c.get("/ki/kanal/leads")
+    assert leads.status_code == 200 and leads.json() == {"leads": []}
+    assert c.get("/ki/ereignisse").json() == {"ereignisse": []}
+    assert "Lead API" in c.get("/ki/karte").json()["text"]
+    listed = c.get("/ki/leads").json()
+    assert listed["found"] == 0 and "E-Mail" in listed["note"]
+    assert c.get("/ki/pruefen").json()["leads"] is False
+    fake.fail_next = [401, 401]  # a wrong password: the Seller API refuses as well, and that is an error
+    assert c.get("/ki/kanal/leads").status_code == 502
+    fake.lead_api = True
+    assert {x["externe_id"] for x in c.get("/ki/kanal/leads").json()["leads"]} == {"mobilede-lead-1", "mobilede-lead-2"}
+    assert "note" not in c.get("/ki/leads").json() and "Lead API" not in c.get("/ki/karte").json()["text"]
+
+
 async def test_ki_writes_need_the_approval_and_run_once(service, fake):
     c = ki_client(service)
     refused = c.put("/ki/ads/207648/price", json={"price": 11990})

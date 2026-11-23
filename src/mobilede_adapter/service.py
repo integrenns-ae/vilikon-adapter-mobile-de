@@ -54,6 +54,7 @@ class Service:
         self.images = ImageStore(settings.data_dir)
         self._refdata: dict[str, tuple[float, list[dict]]] = {}
         self._seller_id = settings.seller_id
+        self.leads_off = False  # the last fetch found the Lead API not enabled
 
     async def aclose(self) -> None:
         await self.client.aclose()
@@ -187,14 +188,27 @@ class Service:
     # ---------- leads: read ----------
 
     async def sync_leads(self) -> int:
+        """New lead events into the store. mobile.de answers 401 or 403 on the Lead API while it is not enabled for
+        this API user, though the Seller API works: then nothing comes in, `leads_off` says why, and the channel stays
+        empty instead of failing on every fetch. A wrong password fails on the Seller API, too, and is reported."""
         sid = await self.seller_id()
-        return await self.store.sync(lambda cursor: self.client.lead_events(sid, cursor))
+        try:
+            found = await self.store.sync(lambda cursor: self.client.lead_events(sid, cursor))
+        except ApiError as e:
+            if e.status not in (401, 403):
+                raise
+            await self.seller_info()
+            self.leads_off = True
+            return 0
+        self.leads_off = False
+        return found
 
     async def list_leads(self, since: str = "", limit: int = 50) -> dict:
         await self.sync_leads()
         found = self.store.since(lead_lib.parse_time(since) if since else None)
         limit = max(1, min(int(limit or 50), 200))
-        return {"found": len(found), "leads": [lead_lib.summary(x, self.t) for x in found[-limit:]]}
+        out = {"found": len(found), "leads": [lead_lib.summary(x, self.t) for x in found[-limit:]]}
+        return {**out, "note": self.t("leads_off")} if self.leads_off else out
 
     async def reference_data(self, kind: str, make: str = "", vehicle_class: str = "Car", search: str = "") -> dict:
         """mobile.de's fixed values: `makes` and `models` (of `make`) of a vehicle class, its `categories`, or a table

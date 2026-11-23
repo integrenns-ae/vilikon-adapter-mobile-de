@@ -1,10 +1,14 @@
 {
   "standard": "vilikon.adapter/1",
   "slug": "mobile-de",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "build": "python3 -m venv .venv && .venv/bin/pip install -r requirements.txt .",
   "start": ".venv/bin/python -m mobilede_adapter serve",
   "check": "ki/pruefen",
+  "setup": {
+    "de": "mobile.de braucht einen API-Zugang (Benutzername und Passwort) für das eigene Händlerkonto. Den schaltet der mobile.de-Kundenservice auf Anfrage frei (service@team.mobile.de, mit Kundennummer); er ist nicht der Login für den Händlerbereich und kostet nichts. Die Seller API (Inserate, Preise, Statistik) kommt damit, die Lead API (Kundenanfragen in den Lead-Eingang) muss eigens freigeschaltet werden. Ohne sie geht alles andere, Anfragen kommen dann weiter per E-Mail. Die Händlernummer braucht es nur, wenn zum Zugang mehrere Konten gehören. Pflegt schon ein Händlerprogramm die Inserate (Bestand mit Export an die Börsen), bekommen Kollegen nur Lesen und Anfragen, nicht Inserate ändern: Sonst überschreibt das Programm ihre Änderungen beim nächsten Abgleich.",
+    "en": "mobile.de needs an API user (user name and password) for the dealer's own account. mobile.de customer service enables it on request (service@team.mobile.de, with the customer number); it is not the login for the dealer area and costs nothing. The Seller API (listings, prices, statistics) comes with it, the Lead API (customer inquiries into the lead intake) has to be enabled separately. Without it everything else works, and inquiries keep coming by e-mail. The dealer number is needed only if several accounts belong to the API user. If a dealer program already maintains the listings (stock with an export to the marketplaces), colleagues get reading and inquiries only, not editing listings: otherwise the program overwrites their changes at its next sync."
+  },
   "languages": {
     "en": {
       "MODULE.json": "vilikon/en/MODULE.json",
